@@ -27,22 +27,26 @@ const handlers = {
 	   },
     'myIntent' : function() {
         //build response first using responseBuilder and then emit
+        fragment = "";
         this.response.speak("Welcome to Ghost! Please pick a letter to begin").listen("Pick a letter to begin");
         this.emit(':responseReady')
     },
     'letterIntent' : function() {
         let letter = this.event.request.intent.slots.letter.value || "A";
-        fragment += letter;
-        let speechOutput = `You picked ${letter}. The total fragment is ${fragment}`;
+        fragment += letter.toLowerCase();
+        
+        let speechOutput = `You picked ${letter}. The total fragment is `
+        speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as> `;
        
         if (winRound()) {
-           speechOutput += `you win this round`;
+           speechOutput += `you completed a word.  the word was ${fragment}`;
+           this.emit(':tell', speechOutput);
         } else {
-           speechOutput += `the round continues`;
+           speechOutput += ` Please pick another letter`;
+           this.response.speak(speechOutput).listen("Pick a letter");
+           this.emit(':responseReady')
         }
-        this.emit(':tell', speechOutput);
-      
-
+  
     }
 };
 
