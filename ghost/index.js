@@ -52,34 +52,29 @@ const handlers = {
             speechOutput += ` The total fragment is <say-as interpret-as="spell-out">${fragment}</say-as>. `;
         }
         if (!availableWords()) {
-            speechOutput += `. There are no words with those letters.  <say-as interpret-as="interjection">wahoo.</say-as> You lose. `;
+            speechOutput += `. There are no words with those letters.  <say-as interpret-as="interjection">bummer.</say-as> You lose. `;
             this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
             this.emit(':responseReady')
-        }
-       
-       
-        if (winRound()) {
-           speechOutput += `. you completed a word.  the word was ${fragment}. `;
-           this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
-           this.emit(':responseReady')
         } else {
-           let newLetter = alexaPick();
-           if (newLetter.length === 1) {
-           fragment += newLetter;
-           speechOutput += `My Turn. I will pick ${newLetter}.  The current letter chain is `;
-           speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
-           speechOutput += `. Your turn! Pick a letter`;
-           
-           this.response.speak(speechOutput).listen("Pick a letter");
-           this.emit(':responseReady')
-           } else {
-            this.response.speak(playerWin(speechOutput)).listen("Pick a letter");
-            this.emit(':responseReady')
-           }
+          if (winRound()) {
+             speechOutput += `. you completed a word.  the word was ${fragment}. `;
+             this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
+             this.emit(':responseReady')
+          } else {
+             let newLetter = alexaPick();
+             if (newLetter.length === 1) {
+             fragment += newLetter;
+             speechOutput += `My Turn. I will pick ${newLetter}.  The current letter chain is `;
+             speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
+             speechOutput += `. Your turn! Pick a letter`;
+             this.response.speak(speechOutput).listen("Pick a letter");
+             this.emit(':responseReady')
+             } else {
+              this.response.speak(playerWin(speechOutput)).listen("Pick a letter");
+              this.emit(':responseReady')
+             }
+          }
         }
-        
-      
-
     }
 };
 
