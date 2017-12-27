@@ -8,12 +8,25 @@ exports.handler = function(event, context, callback) {
 };
 
 const handlers = {
+    'AMAZON.StopIntent': function () {
+        this.response.speak('Goodbye');
+        this.emit(':responseReady');
+    },
+    'AMAZON.HelpIntent': function () {  // practice help
+        var helpText = 'please say a letter like A, B, or C';
+        this.response.speak(helpText);
+        this.emit(':responseReady');
+    },
     'LaunchRequest': function () {
     	this.emit('myIntent');
 	   },
     'myIntent' : function() {
         //build response first using responseBuilder and then emit
-        this.response.speak('Welcome to Ghost!');
-        this.emit(':responseReady');
+        this.response.speak("Welcome to Ghost! Please pick a letter to begin").listen("Pick a letter to begin");
+        this.emit(':responseReady')
+    },
+    'letterIntent' : function() {
+        let letter = this.event.request.intent.slots.letter.value || "A";
+        this.emit(':tell', `you picked ${letter}`);
     }
 };
