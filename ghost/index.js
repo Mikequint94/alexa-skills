@@ -5,6 +5,7 @@ let fs = require("fs");
   dictionary.splice(-1);
   let fragment = "";
   let validWords = [];
+  let playerTurn = true;
 
 exports.handler = function(event, context, callback) {
     const alexa = Alexa.handler(event, context, callback);
@@ -30,27 +31,30 @@ const handlers = {
         //build response first using responseBuilder and then emit
         fragment = "";
         validWords = [];
+        playerTurn = true;
         this.response.speak("Welcome to Ghost! Please pick a letter to begin").listen("Pick a letter to begin");
         this.emit(':responseReady')
     },
     'letterIntent' : function() {
-        let letter = this.event.request.intent.slots.letter.value || "A";
-        fragment += letter.toLowerCase();
+        let letter = this.event.request.intent.slots.letter.values;
+        fragment += letter.toLowerCase().slice(0,1);
         
         let speechOutput = `You picked ${letter}. The total fragment is `
-        speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>. `;
+        speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
         
         if (!availableWords()) {
-            speechOutput += " There are no words with those letters.  You lose.";
+            speechOutput += ". There are no words with those letters.  You lose.";
             this.emit(':tell', speechOutput);
         }
        
        
         if (winRound()) {
-           speechOutput += `you completed a word.  the word was ${fragment}`;
+           speechOutput += `. you completed a word.  the word was ${fragment}`;
            this.emit(':tell', speechOutput);
         } else {
-           speechOutput += ` Please pick another letter`;
+            let newLetter = alexaPick();
+           speechOutput += `. My Turn. I wil l pick ${alexaPick()}`;
+           
            this.response.speak(speechOutput).listen("Pick a letter");
            this.emit(':responseReady')
         }
@@ -61,7 +65,7 @@ const handlers = {
 };
 
 let winRound =function() {
-    return validWords.length === 1;
+    return validWords.includes(fragment);
 }
 let availableWords = function() {
     validWords = dictionary.filter(
@@ -71,4 +75,9 @@ let availableWords = function() {
     } else {
         return true
     }
+}
+
+let alexaPick = function() {
+    let newWord = availableWords[Math.floor(Math.random()*availableWords.length)];
+    return newWord.slice(fragment.length,1);
 }
