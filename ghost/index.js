@@ -4,6 +4,7 @@ let fs = require("fs");
   let dictionary = text.split("\n");
   dictionary.splice(-1);
   let fragment = "";
+  let validWords = [];
 
 exports.handler = function(event, context, callback) {
     const alexa = Alexa.handler(event, context, callback);
@@ -28,6 +29,7 @@ const handlers = {
     'myIntent' : function() {
         //build response first using responseBuilder and then emit
         fragment = "";
+        validWords = [];
         this.response.speak("Welcome to Ghost! Please pick a letter to begin").listen("Pick a letter to begin");
         this.emit(':responseReady')
     },
@@ -36,7 +38,13 @@ const handlers = {
         fragment += letter.toLowerCase();
         
         let speechOutput = `You picked ${letter}. The total fragment is `
-        speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as> `;
+        speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>. `;
+        
+        if (!availableWords()) {
+            speechOutput += " There are no words with those letters.  You lose.";
+            this.emit(':tell', speechOutput);
+        }
+       
        
         if (winRound()) {
            speechOutput += `you completed a word.  the word was ${fragment}`;
@@ -46,10 +54,21 @@ const handlers = {
            this.response.speak(speechOutput).listen("Pick a letter");
            this.emit(':responseReady')
         }
-  
+        
+      
+
     }
 };
 
 let winRound =function() {
-    return dictionary.includes(fragment);
+    return validWords.length === 1;
+}
+let availableWords = function() {
+    validWords = dictionary.filter(
+        word => word.slice(0,fragment.length) === fragment);
+    if (validWords.length === 0) {
+        return false
+    } else {
+        return true
+    }
 }
