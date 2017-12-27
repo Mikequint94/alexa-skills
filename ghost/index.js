@@ -6,6 +6,7 @@ let fs = require("fs");
   let fragment = "";
   let validWords = [];
   let playerTurn = true;
+  let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
 
 exports.handler = function(event, context, callback) {
     const alexa = Alexa.handler(event, context, callback);
@@ -81,6 +82,13 @@ let availableWords = function() {
 }
 
 let alexaPick = function() {
-    let newWord = validWords[Math.floor(Math.random()*validWords.length)];
-    return newWord.slice(fragment.length,1);
+    let nonLosingWords = validWords.filter(
+        word => word.length > fragment.length + 1);
+    if (nonLosingWords.length > 0) {
+      let newWord = nonLosingWords[Math.floor(Math.random()*nonLosingWords.length)];
+      return newWord.slice(fragment.length,fragment.length+1);
+    } else {
+      return alphabet[Math.floor(Math.random()*25)];
+    }
+    
 }
