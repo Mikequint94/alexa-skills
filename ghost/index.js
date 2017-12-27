@@ -36,7 +36,7 @@ const handlers = {
         this.emit(':responseReady')
     },
     'letterIntent' : function() {
-        let letter = this.event.request.intent.slots.letter.values;
+        let letter = this.event.request.intent.slots.letter.value;
         fragment += letter.toLowerCase().slice(0,1);
         
         let speechOutput = `You picked ${letter}. The total fragment is `
@@ -52,8 +52,11 @@ const handlers = {
            speechOutput += `. you completed a word.  the word was ${fragment}`;
            this.emit(':tell', speechOutput);
         } else {
-            let newLetter = alexaPick();
-           speechOutput += `. My Turn. I wil l pick ${alexaPick()}`;
+           let newLetter = alexaPick();
+           fragment += newLetter;
+           speechOutput += `. My Turn. I will pick ${newLetter}.  The current letter chain is `;
+           speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
+           speechOutput += `. Your turn! Pick a letter`;
            
            this.response.speak(speechOutput).listen("Pick a letter");
            this.emit(':responseReady')
@@ -78,6 +81,6 @@ let availableWords = function() {
 }
 
 let alexaPick = function() {
-    let newWord = availableWords[Math.floor(Math.random()*availableWords.length)];
+    let newWord = validWords[Math.floor(Math.random()*validWords.length)];
     return newWord.slice(fragment.length,1);
 }
