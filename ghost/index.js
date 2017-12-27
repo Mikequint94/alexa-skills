@@ -5,7 +5,8 @@ let fs = require("fs");
   dictionary.splice(-1);
   let fragment = "";
   let validWords = [];
-  let playerTurn = true;
+  let alexaScore = 0;
+  let playerScore = 0;
   let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
 
 exports.handler = function(event, context, callback) {
@@ -32,28 +33,44 @@ const handlers = {
         //build response first using responseBuilder and then emit
         fragment = "";
         validWords = [];
-        playerTurn = true;
+        alexaScore = 0;
+        playerScore = 0;
         this.response.speak("Welcome to Ghost! Please pick a letter to begin").listen("Pick a letter to begin");
         this.emit(':responseReady')
     },
+     'scoreIntent' : function() {
+         let speechOutput = `The current score is... me: ${alexaScore}. you: ${playerScore}. Pick a letter to continue. `;
+         this.response.speak(speechOutput).listen("Pick a letter to continue");
+         this.emit(':responseReady')
+    },
     'letterIntent' : function() {
-        let letter = this.event.request.intent.slots.letter.value;
-        fragment += letter.toLowerCase().slice(0,1);
+        let letter = this.event.request.intent.slots.letter.value.slice(0,1);
+        fragment += letter.toLowerCase();
         
-        let speechOutput = `You picked ${letter}. The total fragment is `
-        speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
-        
+        let speechOutput = `You picked ${letter}. `
+        if (fragment.length > 1) {
+            speechOutput += ` The total fragment is <say-as interpret-as="spell-out">${fragment}</say-as>`;
+        }
         if (!availableWords()) {
-            speechOutput += ". There are no words with those letters.  You lose.";
-            this.emit(':tell', speechOutput);
+            speechOutput += `. There are no words with those letters.  <say-as interpret-as="interjection">wahoo.</say-as> You lose.`;
+            alexaScore += 1;
+            speechOutput += ` The current score is... me: ${alexaScore}. you: ${playerScore}.`;
+            speechOutput += ' Say start new game if you would like to play again.'
+            this.emit(':ask', speechOutput);
+            this.emit('myIntent');
         }
        
        
         if (winRound()) {
            speechOutput += `. you completed a word.  the word was ${fragment}`;
-           this.emit(':tell', speechOutput);
+            alexaScore += 1;
+            speechOutput += `The current score is... me: ${alexaScore}. you: ${playerScore}.`;
+             speechOutput += ' Say start new game if you would like to play again.'
+            this.emit(':ask', speechOutput);
+            this.emit('myIntent');
         } else {
            let newLetter = alexaPick();
+           if (newLetter.length === 1) {
            fragment += newLetter;
            speechOutput += `. My Turn. I will pick ${newLetter}.  The current letter chain is `;
            speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
@@ -61,6 +78,13 @@ const handlers = {
            
            this.response.speak(speechOutput).listen("Pick a letter");
            this.emit(':responseReady')
+           } else {
+                playerScore += 1;
+                newLetter += `The current score is... me: ${alexaScore}. you: ${playerScore}.`;
+                newLetter += ' Say start new game if you would like to play again.'
+                 this.emit(':ask', newLetter);
+                this.emit('myIntent');
+           }
         }
         
       
@@ -88,7 +112,8 @@ let alexaPick = function() {
       let newWord = nonLosingWords[Math.floor(Math.random()*nonLosingWords.length)];
       return newWord.slice(fragment.length,fragment.length+1);
     } else {
-      return alphabet[Math.floor(Math.random()*25)];
+    //   return alphabet[Math.floor(Math.random()*25)];
+        return `hmmmm. <say-as interpret-as="interjection">aw man. oy. uh oh.</say-as>  I can't think of anything, I guess I lose. good game!`;
     }
     
 }
