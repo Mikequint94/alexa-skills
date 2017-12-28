@@ -18,12 +18,20 @@ exports.handler = function(event, context, callback) {
 
 const handlers = {
     'AMAZON.StopIntent': function () {
+        this.emit('CancelIntent');
+    },
+    'AMAZON.CancelIntent': function () {
         this.response.speak('Goodbye');
         this.emit(':responseReady');
     },
-    'AMAZON.HelpIntent': function () {  // practice help
-        var helpText = 'please say a letter like A, B, or C';
-        this.response.speak(helpText);
+    'quitIntent': function () {
+      this.emit('CancelIntent');
+    },
+    'AMAZON.HelpIntent': function () {  
+        let helpText = 'Ghost is a word game where each player switches off saying letters until either a word is completed or there are no real words that begin with that letter chain. ';
+        helpText += 'The player who completes a word loses.  The goal is to try and create a word chain that will force your opponent into completing a word. ';
+        helpText += 'To play, simply say a letter like A, B, or C. You can ask for the score at any time.  First player to 5 points wins.';
+        this.response.speak(helpText).listen("Pick a letter to continue.");
         this.emit(':responseReady');
     },
     'LaunchRequest': function () {
@@ -35,7 +43,7 @@ const handlers = {
         validWords = [];
         alexaScore = 0;
         playerScore = 0;
-        this.response.speak("Welcome to Ghost! Please pick a letter to begin").listen("Pick a letter to begin");
+        this.response.speak("Welcome to Ghost! Please pick a letter to begin.  You can say Help at anytime for more information.").listen("Pick a letter to begin");
         this.emit(':responseReady')
     },
      'scoreIntent' : function() {
