@@ -11,7 +11,7 @@ let fs = require("fs");
 
 exports.handler = function(event, context, callback) {
     const alexa = Alexa.handler(event, context, callback);
-    alexa.appId = "amzn1.ask.skill.ef3249e9-5812-4854-8279-720830ef4b93" // APP_ID is your skill id which can be found in the Amazon developer console where you create the skill.
+    alexa.appId = "amzn1.ask.skill.ef3249e9-5812-4854-8279-720830ef4b93"
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
@@ -36,11 +36,19 @@ const handlers = {
         this.response.speak(helpText).listen("Pick a letter to continue.");
         this.emit(':responseReady');
     },
+    'AMAZON.RepeatIntent': function () {  
+        if (fragment === "") {
+          let speechOutput = "Welcome to Ghost! Please pick a letter to begin.  You can say Help for more information.";
+        } else {
+          let speechOutput = ` The total fragment is <say-as interpret-as="spell-out">${fragment}</say-as>. Pick a letter to continue.`;
+        }
+        this.response.speak(speechOutput).listen("Pick a letter to continue.");
+        this.emit(':responseReady');
+    },
     'LaunchRequest': function () {
     	this.emit('myIntent');
 	   },
     'myIntent' : function() {
-        //build response first using responseBuilder and then emit
         fragment = "";
         validWords = [];
         alexaScore = 0;
@@ -80,7 +88,7 @@ const handlers = {
              this.response.speak(speechOutput).listen("Pick a letter");
              this.emit(':responseReady')
              } else {
-              this.response.speak(playerWin(speechOutput)).listen("Pick a letter");
+              this.response.speak(playerWin(newLetter)).listen("Pick a letter");
               this.emit(':responseReady')
              }
           }
