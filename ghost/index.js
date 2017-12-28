@@ -17,6 +17,10 @@ exports.handler = function(event, context, callback) {
 };
 
 const handlers = {
+    'SessionEndedRequest': function () {
+      this.response.speak('Goodbye');
+      this.emit(':responseReady');
+    },
     'AMAZON.StopIntent': function () {
       this.response.speak('Goodbye');
       this.emit(':responseReady');
@@ -35,6 +39,9 @@ const handlers = {
         helpText += 'To play, simply say a letter like A, B, or C. You can ask for the score at any time.  First player to 5 points wins.';
         this.response.speak(helpText).listen("Pick a letter to continue.");
         this.emit(':responseReady');
+    },
+    'Unhandled': function () {
+      this.emit('AMAZON.RepeatIntent');
     },
     'AMAZON.RepeatIntent': function () {  
         let speechOutput;
