@@ -37,10 +37,11 @@ const handlers = {
         this.emit(':responseReady');
     },
     'AMAZON.RepeatIntent': function () {  
+        let speechOutput;
         if (fragment === "") {
-          let speechOutput = "Welcome to Ghost! Please pick a letter to begin.  You can say Help for more information.";
+          speechOutput = "Welcome to Ghost! Please pick a letter to begin.  You can say Help for more information.";
         } else {
-          let speechOutput = ` The total fragment is <say-as interpret-as="spell-out">${fragment}</say-as>. Pick a letter to continue.`;
+          speechOutput = ` The current chain is <say-as interpret-as="spell-out">${fragment}</say-as>. Pick a letter to continue.`;
         }
         this.response.speak(speechOutput).listen("Pick a letter to continue.");
         this.emit(':responseReady');
@@ -71,25 +72,42 @@ const handlers = {
         }
         if (!availableWords()) {
             speechOutput += `. There are no words with those letters.  <say-as interpret-as="interjection">bummer.</say-as> You lose. `;
-            this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
-            this.emit(':responseReady')
+            if (alexaScore < 4) {
+              this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
+              this.emit(':responseReady')
+            } else {
+              this.response.speak(alexaWin(speechOutput));
+              this.emit(':responseReady')
+            }
         } else {
           if (winRound()) {
              speechOutput += `. you completed a word.  the word was ${fragment}. `;
-             this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
-             this.emit(':responseReady')
+             if (alexaScore < 4) {
+               this.response.speak(alexaWin(speechOutput)).listen("Pick a letter");
+               this.emit(':responseReady')
+             } else {
+               this.response.speak(alexaWin(speechOutput));
+               this.emit(':responseReady')
+             }
           } else {
              let newLetter = alexaPick();
              if (newLetter.length === 1) {
              fragment += newLetter;
              speechOutput += `My Turn. I will pick ${newLetter}.  The current letter chain is `;
-             speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>`;
-             speechOutput += `. Your turn! Pick a letter`;
+             speechOutput += `<say-as interpret-as="spell-out">${fragment}</say-as>. Your turn! `;
+             if (fragment.length <= 3) {
+               speechOutput += `Pick a letter. `;
+             }
              this.response.speak(speechOutput).listen("Pick a letter");
              this.emit(':responseReady')
              } else {
-              this.response.speak(playerWin(newLetter)).listen("Pick a letter");
-              this.emit(':responseReady')
+               if (playerScore < 4) {
+                 this.response.speak(playerWin(newLetter)).listen("Pick a letter");
+                 this.emit(':responseReady')
+               } else {
+                 this.response.speak(playerWin(newLetter));
+                 this.emit(':responseReady')
+               }
              }
           }
         }
@@ -123,13 +141,21 @@ function alexaWin(speech) {
   alexaScore += 1;
   fragment = "";
   speech += ` The current score is... me: ${alexaScore}. you: ${playerScore}.`;
-  speech += ' Pick a letter to begin the next round.'
+  if (alexaScore === 5) {
+    speech+= 'Good Game.  See you next time! '
+  } else {
+    speech += ' Pick a letter to begin the next round.'
+  }
   return speech;
 }
 function playerWin(speech) {
   playerScore += 1;
   fragment = alphabet[Math.floor(Math.random()*25)];
   speech += ` The current score is... me: ${alexaScore}. you: ${playerScore}.`;
-  speech += ` I will begin the next round with ${fragment}.  Your turn.  Pick a letter`
+  if (playerScore === 5) {
+    speech+= 'Good Game. You defeated me!! See you next time! '
+  } else {
+    speech += ` I will begin the next round with ${fragment}.  Your turn.  Pick a letter`
+  }
   return speech;
 }
