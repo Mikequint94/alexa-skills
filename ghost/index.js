@@ -18,14 +18,16 @@ exports.handler = function(event, context, callback) {
 
 const handlers = {
     'AMAZON.StopIntent': function () {
-        this.emit('CancelIntent');
+      this.response.speak('Goodbye');
+      this.emit(':responseReady');
     },
     'AMAZON.CancelIntent': function () {
         this.response.speak('Goodbye');
         this.emit(':responseReady');
     },
     'quitIntent': function () {
-      this.emit('CancelIntent');
+      this.response.speak('Goodbye');
+      this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function () {  
         let helpText = 'Ghost is a word game where each player switches off saying letters until either a word is completed or there are no real words that begin with that letter chain. ';
